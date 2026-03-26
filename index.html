@@ -736,39 +736,51 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.1 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// Waitlist form — stores emails in localStorage for demo
-// In production: replace with fetch() to your backend endpoint
-function submitForm(e, source) {
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xreognln';
+
+async function submitForm(e, source) {
   e.preventDefault();
-  const emailEl = document.getElementById(source + '-email');
-  const btnEl   = document.getElementById(source + '-btn');
+  const emailEl   = document.getElementById(source + '-email');
+  const btnEl     = document.getElementById(source + '-btn');
   const successEl = document.getElementById(source + '-success');
   const email = emailEl.value.trim();
   if (!email) return;
 
-  btnEl.textContent = 'Guardando…';
+  btnEl.textContent = 'Enviando…';
   btnEl.classList.add('loading');
   btnEl.disabled = true;
 
-  // Save to localStorage (demo — replace with API call in production)
-  setTimeout(() => {
-    const list = JSON.parse(localStorage.getItem('captare_waitlist') || '[]');
-    if (!list.includes(email)) {
-      list.push(email);
-      localStorage.setItem('captare_waitlist', JSON.stringify(list));
-    }
+  try {
+    const res = await fetch(FORMSPREE_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ email: email, source: source }),
+    });
 
-    // Show success
-    if (source === 'hero') {
-      document.getElementById('hero-form').style.display = 'none';
+    if (res.ok) {
+      // Save locally too for counter
+      const list = JSON.parse(localStorage.getItem('captare_waitlist') || '[]');
+      if (!list.includes(email)) { list.push(email); localStorage.setItem('captare_waitlist', JSON.stringify(list)); }
+
+      if (source === 'hero') {
+        document.getElementById('hero-form').style.display = 'none';
+      } else {
+        document.getElementById('bottom-form').style.display = 'none';
+      }
+      successEl.style.display = 'block';
+      updateCounter();
     } else {
-      document.getElementById('bottom-form').style.display = 'none';
+      btnEl.textContent = 'Quiero acceso →';
+      btnEl.classList.remove('loading');
+      btnEl.disabled = false;
+      alert('Ha habido un error. Inténtalo de nuevo.');
     }
-    successEl.style.display = 'block';
-
-    // Update counter
-    updateCounter();
-  }, 800);
+  } catch(err) {
+    btnEl.textContent = 'Quiero acceso →';
+    btnEl.classList.remove('loading');
+    btnEl.disabled = false;
+    alert('Error de conexión. Inténtalo de nuevo.');
+  }
 }
 
 // Simulated waitlist counter (replace with real API in production)
