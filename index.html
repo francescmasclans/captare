@@ -620,6 +620,17 @@ footer {
       <p class="step-desc">Tienes el listado listo con email, web y teléfono de cada prospecto. Tú decides cómo y cuándo contactar — sin perder tiempo en buscar datos.</p>
     </div>
   </div>
+
+<div class="cta-mid reveal">
+  <form class="waitlist-form" id="steps-form" onsubmit="submitForm(event,'steps')">
+    <input type="email" id="steps-email" placeholder="tu@empresa.com" required autocomplete="email">
+    <button type="submit" id="steps-btn">Quiero acceso →</button>
+  </form>
+  <div class="success-msg" id="steps-success">
+    ✓ Apuntado. Te avisamos cuando abramos acceso.
+  </div>
+  <p class="form-note">Sin tarjeta. Sin compromiso.</p>
+</div>
 </section>
 
 <!-- FEATURES -->
@@ -647,6 +658,17 @@ footer {
       <p class="feature-desc">Todo lo que antes hacías a mano — buscar empresas, encontrar contactos, organizar la información — Captare lo hace en minutos por ti.</p>
     </div>
   </div>
+
+<div class="cta-mid reveal">
+  <form class="waitlist-form" id="features-form" onsubmit="submitForm(event,'features')">
+    <input type="email" id="features-email" placeholder="tu@empresa.com" required autocomplete="email">
+    <button type="submit" id="features-btn">Quiero acceso →</button>
+  </form>
+  <div class="success-msg" id="features-success">
+    ✓ Apuntado. Te avisamos cuando abramos acceso.
+  </div>
+  <p class="form-note">Sin tarjeta. Sin compromiso.</p>
+</div>
 </section>
 
 <!-- PRICING -->
@@ -700,6 +722,17 @@ footer {
   <p style="font-size:11px;color:var(--muted);margin-top:16px;text-align:center">
     Precios orientativos · sujetos a cambio antes del lanzamiento · usuarios de lista de espera tendrán precio especial de lanzamiento
   </p>
+
+<div class="cta-mid reveal">
+  <form class="waitlist-form" id="pricing-form" onsubmit="submitForm(event,'pricing')">
+    <input type="email" id="pricing-email" placeholder="tu@empresa.com" required autocomplete="email">
+    <button type="submit" id="pricing-btn">Quiero acceso →</button>
+  </form>
+  <div class="success-msg" id="pricing-success">
+    ✓ Apuntado. Te avisamos cuando abramos acceso.
+  </div>
+  <p class="form-note">Sin tarjeta. Sin compromiso.</p>
+</div>
 </section>
 
 <!-- BOTTOM CTA -->
@@ -758,15 +791,11 @@ async function submitForm(e, source) {
     });
 
     if (res.ok) {
-      // Save locally too for counter
       const list = JSON.parse(localStorage.getItem('captare_waitlist') || '[]');
       if (!list.includes(email)) { list.push(email); localStorage.setItem('captare_waitlist', JSON.stringify(list)); }
 
-      if (source === 'hero') {
-        document.getElementById('hero-form').style.display = 'none';
-      } else {
-        document.getElementById('bottom-form').style.display = 'none';
-      }
+      const formEl = document.getElementById(source + '-form') || emailEl.closest('form');
+      if (formEl) formEl.style.display = 'none';
       successEl.style.display = 'block';
       updateCounter();
     } else {
