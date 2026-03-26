@@ -3,1308 +3,803 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OCA ATI — Prospección Automática</title>
+<title>Captare — Captare · Prospección B2B</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0d0f0e;
-    --surface: #141715;
-    --surface2: #1a1d1b;
-    --border: #252826;
-    --border2: #2e3330;
-    --accent: #c8f135;
-    --accent-dim: #8aaa22;
-    --accent-bg: rgba(200,241,53,0.07);
-    --text: #e8ede9;
-    --text2: #8a9490;
-    --text3: #515c57;
-    --red: #f06060;
-    --red-bg: rgba(240,96,96,0.08);
-    --amber: #f0b840;
-    --amber-bg: rgba(240,184,64,0.08);
-    --blue: #60b8f0;
-    --blue-bg: rgba(96,184,240,0.08);
-    --green: #60d090;
-    --green-bg: rgba(96,208,144,0.08);
-    --font-display: 'Syne', sans-serif;
-    --font-mono: 'DM Mono', monospace;
-    --r: 6px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 13px;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
+:root {
+  --ink: #0e0e0c;
+  --paper: #f5f2eb;
+  --paper2: #ede9df;
+  --accent: #2a6b3f;
+  --accent-light: #d6ead e;
+  --accent-light: #ddeede;
+  --accent-mid: #4a9b64;
+  --muted: #7a7a6e;
+  --border: rgba(14,14,12,0.1);
+  --serif: 'Instrument Serif', Georgia, serif;
+  --mono: 'Geist Mono', 'Courier New', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* HEADER */
-  header {
-    padding: 20px 32px 16px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-  }
-  .logo {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-  }
-  .logo-oca {
-    font-family: var(--font-display);
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--accent);
-    letter-spacing: -0.5px;
-  }
-  .logo-div {
-    font-family: var(--font-display);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text3);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-  .pipeline-steps {
-    display: flex;
-    align-items: center;
-    gap: 0;
-  }
-  .pip-step {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 12px;
-    border: 1px solid var(--border);
-    font-size: 11px;
-    color: var(--text3);
-    letter-spacing: 0.5px;
-    transition: all .2s;
-    cursor: default;
-  }
-  .pip-step:first-child { border-radius: var(--r) 0 0 var(--r); }
-  .pip-step:last-child  { border-radius: 0 var(--r) var(--r) 0; }
-  .pip-step + .pip-step { border-left: none; }
-  .pip-step.active  { color: var(--accent); border-color: var(--accent-dim); background: var(--accent-bg); }
-  .pip-step.done    { color: var(--green); border-color: #2a4a38; background: var(--green-bg); }
-  .pip-step .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+html { scroll-behavior: smooth; }
 
-  /* LAYOUT */
-  .main { display: flex; flex: 1; overflow: hidden; }
-  .sidebar {
-    width: 300px;
-    min-width: 300px;
-    border-right: 1px solid var(--border);
-    padding: 24px 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    overflow-y: auto;
-  }
-  .content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
 
-  /* SIDEBAR SECTIONS */
-  .section-label {
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--text3);
-    margin-bottom: 10px;
-  }
-  .field-group { display: flex; flex-direction: column; gap: 8px; }
-  label { font-size: 11px; color: var(--text2); }
-  input, select, textarea {
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: var(--r);
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    padding: 8px 10px;
-    width: 100%;
-    transition: border-color .15s;
-    outline: none;
-  }
-  input:focus, select:focus, textarea:focus { border-color: var(--accent-dim); }
-  input::placeholder, textarea::placeholder { color: var(--text3); }
-  select option { background: var(--surface2); }
-  textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+/* NOISE TEXTURE OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.4;
+}
 
-  .keys-section { border: 1px solid var(--border2); border-radius: var(--r); overflow: hidden; }
-  .keys-header {
-    padding: 8px 12px;
-    background: var(--surface2);
-    font-size: 10px;
-    letter-spacing: 1px;
-    color: var(--text3);
-    text-transform: uppercase;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    user-select: none;
-  }
-  .keys-header:hover { color: var(--text2); }
-  .keys-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-  .keys-body.collapsed { display: none; }
+/* NAV */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 18px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: rgba(245,242,235,0.9);
+  backdrop-filter: blur(12px);
+}
+.nav-logo {
+  font-family: var(--serif);
+  font-size: 36px;
+  color: var(--accent);
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+.nav-logo span { font-style: italic; }
+.nav-cta {
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  padding: 8px 20px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background .2s;
+  text-decoration: none;
+  display: inline-block;
+}
+.nav-cta:hover { background: var(--accent); }
 
-  .key-status {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 3px;
-  }
-  .key-dot {
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: var(--text3);
-    flex-shrink: 0;
-  }
-  .key-dot.ok { background: var(--green); }
-  .key-dot.err { background: var(--red); }
-  .key-note { font-size: 10px; color: var(--text3); }
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 40px 80px;
+  text-align: center;
+  position: relative;
+}
 
-  /* BUTTONS */
-  .btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    padding: 10px 16px;
-    border: none;
-    border-radius: var(--r);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    cursor: pointer;
-    transition: all .15s;
-    font-weight: 500;
-    letter-spacing: 0.3px;
-  }
-  .btn-primary {
-    background: var(--accent);
-    color: #0d0f0e;
-    width: 100%;
-  }
-  .btn-primary:hover { background: #d4f550; }
-  .btn-primary:disabled { background: var(--border2); color: var(--text3); cursor: not-allowed; }
-  .btn-ghost {
-    background: transparent;
-    border: 1px solid var(--border2);
-    color: var(--text2);
-  }
-  .btn-ghost:hover { border-color: var(--text3); color: var(--text); }
-  .btn-sm { padding: 5px 10px; font-size: 11px; }
-  .btn-danger {
-    background: var(--red-bg);
-    border: 1px solid #3a2020;
-    color: var(--red);
-  }
+.hero-eyebrow {
+  font-size: 11px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 4px 14px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-bottom: 32px;
+  opacity: 0;
+  animation: fadeUp .6s ease .1s forwards;
+}
 
-  /* TABLA */
-  .table-header {
-    padding: 12px 20px 10px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .table-title { font-family: var(--font-display); font-size: 15px; font-weight: 600; }
-  .table-meta { font-size: 11px; color: var(--text3); }
-  .table-actions { display: flex; gap: 8px; }
+.hero-title {
+  font-family: var(--serif);
+  font-size: clamp(48px, 7vw, 96px);
+  line-height: 1.0;
+  letter-spacing: -2px;
+  max-width: 900px;
+  margin-bottom: 24px;
+  opacity: 0;
+  animation: fadeUp .7s ease .25s forwards;
+}
+.hero-title em {
+  font-style: italic;
+  color: var(--accent);
+}
 
-  .table-wrap { flex: 1; overflow: auto; }
-  table { width: 100%; border-collapse: collapse; }
-  thead tr { background: var(--surface2); position: sticky; top: 0; z-index: 2; }
-  th {
-    padding: 9px 14px;
-    text-align: left;
-    font-size: 10px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--text3);
-    border-bottom: 1px solid var(--border);
-    font-weight: 500;
-    white-space: nowrap;
-  }
-  td {
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
-    font-size: 12px;
-    vertical-align: middle;
-    max-width: 200px;
-  }
-  tr:hover td { background: var(--surface2); }
-  td.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hero-sub {
+  font-size: 16px;
+  color: var(--muted);
+  max-width: 520px;
+  line-height: 1.7;
+  margin-bottom: 48px;
+  opacity: 0;
+  animation: fadeUp .7s ease .4s forwards;
+}
 
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
-    border-radius: 20px;
-    font-size: 10px;
-    letter-spacing: 0.3px;
-    white-space: nowrap;
-  }
-  .badge-pending  { background: var(--surface2); color: var(--text3); border: 1px solid var(--border2); }
-  .badge-hunting  { background: var(--amber-bg); color: var(--amber); border: 1px solid #3a3010; }
-  .badge-found    { background: var(--blue-bg);  color: var(--blue);  border: 1px solid #10283a; }
-  .badge-drafting { background: var(--amber-bg); color: var(--amber); border: 1px solid #3a3010; }
-  .badge-ready    { background: var(--green-bg); color: var(--green); border: 1px solid #103a22; }
-  .badge-error    { background: var(--red-bg);   color: var(--red);   border: 1px solid #3a1010; }
-  .badge-noemail  { background: var(--surface2); color: var(--text3); border: 1px solid var(--border2); }
+/* WAITLIST FORM */
+.waitlist-form {
+  display: flex;
+  gap: 0;
+  max-width: 460px;
+  width: 100%;
+  border: 1px solid var(--ink);
+  border-radius: 3px;
+  overflow: hidden;
+  opacity: 0;
+  animation: fadeUp .7s ease .55s forwards;
+}
+.waitlist-form input {
+  flex: 1;
+  border: none;
+  background: white;
+  padding: 14px 18px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink);
+  outline: none;
+}
+.waitlist-form input::placeholder { color: #aaa; }
+.waitlist-form button {
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  padding: 14px 24px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .2s;
+}
+.waitlist-form button:hover { background: var(--accent); }
+.waitlist-form button.loading { opacity: 0.6; cursor: not-allowed; }
 
-  .rating-stars { color: var(--amber); font-size: 11px; }
-  .link-cell a { color: var(--blue); text-decoration: none; font-size: 11px; }
-  .link-cell a:hover { text-decoration: underline; }
+.form-note {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 12px;
+  opacity: 0;
+  animation: fadeUp .7s ease .7s forwards;
+}
+.success-msg {
+  display: none;
+  background: var(--accent-light, #ddeede);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 12px 24px;
+  border-radius: 3px;
+  font-size: 13px;
+  max-width: 460px;
+  width: 100%;
+  text-align: center;
+}
 
-  .action-cell { display: flex; gap: 6px; }
-  .icon-btn {
-    background: none;
-    border: 1px solid var(--border2);
-    border-radius: 4px;
-    color: var(--text3);
-    cursor: pointer;
-    padding: 4px 7px;
-    font-size: 11px;
-    transition: all .15s;
-  }
-  .icon-btn:hover { border-color: var(--accent-dim); color: var(--accent); }
-  .icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+/* SOCIAL PROOF STRIP */
+.proof-strip {
+  margin-top: 64px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  opacity: 0;
+  animation: fadeUp .7s ease .85s forwards;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.proof-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.proof-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent-mid);
+  flex-shrink: 0;
+}
+.proof-sep { color: var(--border); font-size: 18px; }
 
-  /* MODAL */
-  .modal-bg {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,.7);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 100;
-    backdrop-filter: blur(3px);
-  }
-  .modal-bg.hidden { display: none; }
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 10px;
-    width: 600px;
-    max-width: 95vw;
-    max-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 24px 80px rgba(0,0,0,.6);
-  }
-  .modal-header {
-    padding: 18px 20px 14px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  .modal-company { font-family: var(--font-display); font-size: 16px; font-weight: 600; }
-  .modal-email-to { font-size: 11px; color: var(--accent); margin-top: 3px; }
-  .modal-close {
-    background: none; border: none; color: var(--text3);
-    font-size: 18px; cursor: pointer; padding: 2px 6px;
-    transition: color .15s;
-  }
-  .modal-close:hover { color: var(--text); }
-  .modal-body { padding: 18px 20px; overflow-y: auto; flex: 1; }
-  .modal-subject {
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: var(--r);
-    padding: 10px 12px;
-    font-size: 12px;
-    color: var(--text2);
-    margin-bottom: 10px;
-  }
-  .modal-subject strong { color: var(--text); }
-  .email-body-edit {
-    width: 100%;
-    min-height: 260px;
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: var(--r);
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    padding: 14px;
-    line-height: 1.6;
-    resize: vertical;
-    outline: none;
-    transition: border-color .15s;
-  }
-  .email-body-edit:focus { border-color: var(--accent-dim); }
-  .modal-footer {
-    padding: 14px 20px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-  }
-  .btn-send {
-    background: var(--accent);
-    color: #0d0f0e;
-    padding: 9px 18px;
-    border: none;
-    border-radius: var(--r);
-    font-family: var(--font-mono);
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background .15s;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .btn-send:hover { background: #d4f550; }
-  .btn-send:disabled { background: var(--border2); color: var(--text3); cursor: not-allowed; }
+/* HOW IT WORKS */
+.section {
+  padding: 100px 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.section-label {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 48px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
 
-  /* LOG */
-  .log-bar {
-    border-top: 1px solid var(--border);
-    padding: 8px 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-height: 36px;
-    background: var(--surface);
-  }
-  .log-label { font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; flex-shrink: 0; }
-  .log-msg { font-size: 11px; color: var(--text2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .log-msg.ok  { color: var(--green); }
-  .log-msg.err { color: var(--red); }
-  .log-msg.warn{ color: var(--amber); }
-  .spinner {
-    width: 12px; height: 12px;
-    border: 1.5px solid var(--border2);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin .7s linear infinite;
-    flex-shrink: 0;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+.step {
+  background: var(--paper);
+  padding: 40px 32px;
+  position: relative;
+}
+.step:hover { background: var(--paper2); }
+.step-num {
+  font-family: var(--serif);
+  font-size: 48px;
+  color: var(--paper2);
+  line-height: 1;
+  margin-bottom: 16px;
+  -webkit-text-stroke: 1px var(--border);
+  text-stroke: 1px var(--border);
+}
+.step-title {
+  font-family: var(--serif);
+  font-size: 22px;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+.step-title em { font-style: italic; color: var(--accent); }
+.step-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
-  /* EMPTY STATE */
-  .empty-state {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    color: var(--text3);
-    padding: 40px;
-  }
-  .empty-icon { font-size: 36px; opacity: .4; }
-  .empty-title { font-family: var(--font-display); font-size: 16px; color: var(--text2); }
-  .empty-sub { font-size: 12px; text-align: center; max-width: 260px; line-height: 1.6; }
+/* FEATURES */
+.features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-top: 0;
+}
+.feature-card {
+  border: 1px solid var(--border);
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .2s;
+}
+.feature-card:hover { border-color: var(--accent); }
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .3s ease;
+}
+.feature-card:hover::before { transform: scaleX(1); }
+.feature-icon {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+.feature-title {
+  font-family: var(--serif);
+  font-size: 20px;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+.feature-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
-  /* PROGRESS BAR */
-  .prog-bar-wrap {
-    height: 2px;
-    background: var(--border);
-    overflow: hidden;
-  }
-  .prog-bar {
-    height: 100%;
-    background: var(--accent);
-    transition: width .3s ease;
-    width: 0%;
-  }
+/* PRICING */
+.pricing {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+.plan {
+  background: var(--paper);
+  padding: 40px 32px;
+}
+.plan.featured {
+  background: var(--ink);
+  color: var(--paper);
+}
+.plan-name {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.plan.featured .plan-name { color: rgba(245,242,235,0.5); }
+.plan-price {
+  font-family: var(--serif);
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.plan-price sup { font-size: 20px; vertical-align: super; }
+.plan-period { font-size: 12px; color: var(--muted); margin-bottom: 32px; }
+.plan.featured .plan-period { color: rgba(245,242,235,0.5); }
+.plan-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+.plan-features li {
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.plan.featured .plan-features li { color: rgba(245,242,235,0.7); }
+.plan-features li::before {
+  content: '→';
+  color: var(--accent-mid);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.plan.featured .plan-features li::before { color: var(--accent-mid); }
+.plan-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all .2s;
+  text-decoration: none;
+}
+.plan-btn:hover { background: var(--ink); color: var(--paper); }
+.plan.featured .plan-btn {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+.plan.featured .plan-btn:hover { background: var(--accent-mid); }
+.plan-badge {
+  display: inline-block;
+  background: var(--accent);
+  color: white;
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 2px;
+  margin-bottom: 16px;
+}
 
-  /* TOOLTIP */
-  [title] { cursor: help; }
+/* BOTTOM CTA */
+.bottom-cta {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 100px 40px;
+  text-align: center;
+}
+.bottom-cta-title {
+  font-family: var(--serif);
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 1.1;
+  margin-bottom: 16px;
+  letter-spacing: -1px;
+}
+.bottom-cta-title em { font-style: italic; color: var(--accent-mid); }
+.bottom-cta-sub {
+  color: rgba(245,242,235,0.5);
+  font-size: 14px;
+  margin-bottom: 40px;
+}
+.bottom-form {
+  display: flex;
+  gap: 0;
+  max-width: 440px;
+  width: 100%;
+  margin: 0 auto;
+  border: 1px solid rgba(245,242,235,0.2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.bottom-form input {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: none;
+  padding: 14px 18px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--paper);
+  outline: none;
+}
+.bottom-form input::placeholder { color: rgba(245,242,235,0.3); }
+.bottom-form button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .2s;
+}
+.bottom-form button:hover { background: var(--accent-mid); }
 
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+/* FOOTER */
+footer {
+  padding: 32px 40px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer-logo { font-family: var(--serif); font-size: 16px; color: var(--ink); }
+.footer-logo span { font-style: italic; }
 
-  .divider { border: none; border-top: 1px solid var(--border); }
+/* TICKER */
+.ticker-wrap {
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  height: 44px;
+  background: var(--paper2);
+}
+.ticker-inner {
+  display: block;
+  animation: ticker 30s linear infinite;
+  white-space: nowrap;
+}
+.ticker-item {
+  display: inline-block;
+  padding: 0 28px;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  line-height: 44px;
+  vertical-align: top;
+}
+.ticker-item::after {
+  content: '·';
+  color: var(--accent);
+}
 
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-  .tag-pill {
-    display: inline-flex; align-items: center; gap: 4px;
-    background: var(--accent-bg); border: 1px solid var(--accent-dim);
-    color: var(--accent); border-radius: 20px;
-    padding: 2px 8px; font-size: 10px; margin: 2px;
-    cursor: pointer; font-family: var(--font-mono);
-    transition: background .15s;
-  }
-  .tag-pill:hover { background: rgba(200,241,53,0.15); }
-  .municipality-progress {
-    font-size: 10px; color: var(--text3);
-    padding: 4px 0; letter-spacing: 0.3px;
-  }
-  .row-new { animation: fadeIn .25s ease forwards; }
-  .mem-bar {
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border);
-    padding: 7px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 11px;
-    color: var(--text3);
-  }
-  .mem-bar strong { color: var(--accent); font-weight: 500; }
-  .mem-bar .sep { color: var(--border2); }
-  .mem-reset-btn {
-    background: none;
-    border: 1px solid var(--border2);
-    border-radius: 4px;
-    color: var(--text3);
-    font-size: 10px;
-    font-family: var(--font-mono);
-    padding: 2px 8px;
-    cursor: pointer;
-    transition: all .15s;
-    margin-left: auto;
-  }
-  .mem-reset-btn:hover { border-color: var(--red); color: var(--red); }
-  .badge-known { background: var(--surface2); color: var(--text3); border: 1px solid var(--border2); opacity: 0.5; }
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ANIMATIONS */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+.reveal.visible { opacity: 1; transform: none; }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  nav { padding: 16px 20px; }
+  .hero { padding: 100px 20px 60px; }
+  .section { padding: 60px 20px; }
+  .steps { grid-template-columns: 1fr; }
+  .features { grid-template-columns: 1fr; }
+  .pricing { grid-template-columns: 1fr; }
+  .bottom-cta { padding: 60px 20px; }
+  footer { padding: 24px 20px; }
+  .proof-sep { display: none; }
+}
+
+/* COUNTER ANIM */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="logo">
-    <span class="logo-oca">OCA</span>
-    <span class="logo-div">ATI · Prospección</span>
-  </div>
-  <div class="pipeline-steps">
-    <div class="pip-step active" id="pip1"><span class="dot"></span>Extracción</div>
-    <div class="pip-step" id="pip2"><span class="dot"></span>Email hunt</div>
-    <div class="pip-step" id="pip3"><span class="dot"></span>Redacción IA</div>
-    <div class="pip-step" id="pip4"><span class="dot"></span>Envío</div>
-  </div>
-</header>
+<nav>
+  <div style="display:flex;align-items:baseline;gap:10px"><div class="nav-logo">Cap<span>tare</span></div><div style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)">captare.app</div></div>
+  <a href="#waitlist" class="nav-cta">Únete a la lista</a>
+</nav>
 
-<div class="main">
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-
-    <!-- API Keys -->
-    <div class="keys-section">
-      <div class="keys-header" onclick="toggleKeys()">
-        <span>⚙ Configuración API</span>
-        <span id="keys-arrow">▾</span>
-      </div>
-      <div class="keys-body" id="keys-body">
-        <div class="field-group">
-          <label>Google Places API Key</label>
-          <input type="password" id="key-google" placeholder="AIza..." oninput="markKeyDirty('google')">
-          <div class="key-status">
-            <div class="key-dot" id="dot-google"></div>
-            <span class="key-note" id="note-google">No configurada</span>
-          </div>
-        </div>
-        <div class="field-group">
-          <label>Hunter.io API Key <span style="color:var(--accent-dim)">(free: 25/mes)</span></label>
-          <input type="password" id="key-hunter" placeholder="hunter_..." oninput="markKeyDirty('hunter')">
-          <div class="key-status">
-            <div class="key-dot" id="dot-hunter"></div>
-            <span class="key-note" id="note-hunter">No configurada · <a href="https://hunter.io/users/sign_up" target="_blank" style="color:var(--blue);text-decoration:none">Crear cuenta gratis</a></span>
-          </div>
-        </div>
-        <div class="field-group">
-          <label>OpenAI API Key</label>
-          <input type="password" id="key-claude" placeholder="sk-..." oninput="markKeyDirty('claude')">
-          <div class="key-status">
-            <div class="key-dot" id="dot-claude"></div>
-            <span class="key-note" id="note-claude">No configurada · usa GPT-4o</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <hr class="divider">
-
-    <!-- Búsqueda -->
-    <div>
-      <div class="section-label">Búsqueda</div>
-      <div class="field-group">
-        <label>Sector / tipo de empresa</label>
-        <input type="text" id="sector-type" placeholder="ej. empresa metalurgia, fundición acero…" value="empresa manufactura metalurgia">
-        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:2px">
-          <button class="tag-pill" onclick="setSector('fábrica manufactura industrial')">Manufactura</button>
-          <button class="tag-pill" onclick="setSector('empresa metalurgia fabricación metálica')">Metalurgia</button>
-          <button class="tag-pill" onclick="setSector('fundición forja acero')">Fundición</button>
-          <button class="tag-pill" onclick="setSector('taller mecanizado piezas industriales')">Mecanizado</button>
-          <button class="tag-pill" onclick="setSector('industria química petroquímica')">Química</button>
-          <button class="tag-pill" onclick="setSector('industria alimentaria fábrica')">Alimentaria</button>
-          <button class="tag-pill" onclick="setSector('empresa construcción industrial')">Construcción</button>
-          <button class="tag-pill" onclick="setSector('empresa energía utilities industrial')">Energía</button>
-          <button class="tag-pill" onclick="setSector('almacén logística industrial')">Logística</button>
-        </div>
-        <input type="text" id="query-custom" style="display:none" value="">
-        <label>Municipios <span style="color:var(--text3)">(uno por línea)</span></label>
-        <textarea id="locations" rows="4" placeholder="Terrassa&#10;Sabadell&#10;Rubí&#10;Sant Cugat del Vallès">Terrassa
-Sabadell
-Rubí</textarea>
-        <label>Máx. resultados por municipio</label>
-        <select id="maxres">
-          <option value="20" selected>20 por municipio</option>
-          <option value="40">40 por municipio</option>
-          <option value="60">60 por municipio (máx.)</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Email template -->
-    <div>
-      <div class="section-label">Contexto para IA</div>
-      <div class="field-group">
-        <label>Tu nombre y cargo</label>
-        <input type="text" id="sender-name" placeholder="Francesc García, Director ATI" value="Francesc, Director ATI — OCA Global">
-        <label>Servicio a ofrecer</label>
-        <select id="service">
-          <option value="inspeccion_industrial">Inspección industrial (END, ultrasonidos, visual)</option>
-          <option value="certificacion_equipos">Certificación de equipos a presión</option>
-          <option value="inspeccion_gruas">Inspección de grúas y elevadores</option>
-          <option value="auditoria_seguridad">Auditoría de seguridad industrial</option>
-          <option value="inspeccion_instalaciones">Inspección de instalaciones eléctricas</option>
-        </select>
-        <label>Tono del email</label>
-        <select id="tone">
-          <option value="profesional">Profesional y directo</option>
-          <option value="cercano">Cercano y consultivo</option>
-          <option value="tecnico">Técnico / especialista</option>
-        </select>
-      </div>
-    </div>
-
-    <button class="btn btn-primary" id="btn-search" onclick="startPipeline()">
-      ▶ Iniciar prospección
-    </button>
-
-    <div style="font-size:10px;color:var(--text3);line-height:1.5;">
-      Los resultados se acumulan en tabla. Cambia sector o municipios y vuelve a buscar para añadir más. Exporta el CSV al final.
-    </div>
-
-  </aside>
-
-  <!-- CONTENT -->
-  <div class="content">
-    <div class="prog-bar-wrap"><div class="prog-bar" id="prog-bar"></div></div>
-
-    <div class="mem-bar" id="mem-bar">
-      Memoria: <strong id="mem-count">0</strong> empresas conocidas
-      <span class="sep">·</span>
-      <span id="mem-detail" style="color:var(--text3)">Sin historial aún</span>
-      <button class="mem-reset-btn" onclick="resetMemory()">↺ Resetear historial</button>
-    </div>
-
-    <div class="table-header">
-      <div>
-        <div class="table-title">Empresas prospectadas</div>
-        <div class="table-meta" id="table-meta">Sin datos · configura las APIs y lanza la búsqueda</div>
-      </div>
-      <div class="table-actions">
-        <button class="btn btn-ghost btn-sm" onclick="exportCSV()" id="btn-export" disabled>↓ Exportar CSV</button>
-        <button class="btn btn-ghost btn-sm" onclick="clearAll()" id="btn-clear" disabled>✕ Limpiar</button>
-      </div>
-    </div>
-
-    <div class="table-wrap" id="table-wrap">
-      <div class="empty-state" id="empty-state">
-        <div class="empty-icon">⬡</div>
-        <div class="empty-title">Sin empresas aún</div>
-        <div class="empty-sub">Los resultados se acumulan entre búsquedas. Pulsa "Limpiar" para vaciar la tabla.</div>
-      </div>
-      <table id="main-table" style="display:none">
-        <thead>
-          <tr>
-            <th style="width:30px">#</th>
-            <th>Empresa</th>
-            <th>Dirección</th>
-            <th>Web</th>
-            <th>Rating</th>
-            <th>Email</th>
-            <th>Estado</th>
-            <th style="width:70px">Historial</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="table-body"></tbody>
-      </table>
-    </div>
-
-    <div class="log-bar">
-      <span class="log-label">LOG</span>
-      <div id="spinner-log" class="spinner" style="display:none"></div>
-      <span class="log-msg" id="log-msg">Listo</span>
-    </div>
+<!-- TICKER -->
+<div class="ticker-wrap" style="margin-top:72px">
+  <div class="ticker-inner">
+    <div class="ticker-item">Menos tiempo prospectando</div>
+    <div class="ticker-item">Más tiempo vendiendo</div>
+    <div class="ticker-item">Búsqueda de emails verificados</div>
+    <div class="ticker-item">Contactos verificados · Listos para llamar</div>
+    <div class="ticker-item">Captare · Prospección B2B</div>
+    <div class="ticker-item">Sin configuraciones · Sin código</div>
+    <div class="ticker-item">Menos tiempo prospectando</div>
+    <div class="ticker-item">Más tiempo vendiendo</div>
+    <div class="ticker-item">Búsqueda de emails verificados</div>
+    <div class="ticker-item">Contactos verificados · Listos para llamar</div>
+    <div class="ticker-item">Captare · Prospección B2B</div>
+    <div class="ticker-item">Sin configuraciones · Sin código</div>
   </div>
 </div>
 
-<!-- MODAL EMAIL -->
-<div class="modal-bg hidden" id="modal-bg" onclick="closeModalBg(event)">
-  <div class="modal">
-    <div class="modal-header">
-      <div>
-        <div class="modal-company" id="modal-company">—</div>
-        <div class="modal-email-to" id="modal-to">—</div>
-      </div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+<!-- HERO -->
+<section class="hero" id="waitlist">
+  <div class="hero-eyebrow">Acceso anticipado — lista de espera</div>
+  <h1 class="hero-title">
+    Menos tiempo<br>prospectando,<br><em>más tiempo vendiendo.</em>
+  </h1>
+  <p class="hero-sub">
+    Dile a Captare qué tipo de empresa buscas y dónde. En minutos tienes un listado de prospectos con sus datos de contacto, listo para iniciar tus acciones comerciales.
+  </p>
+
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%">
+    <form class="waitlist-form" id="hero-form" onsubmit="submitForm(event,'hero')">
+      <input type="email" id="hero-email" placeholder="tu@empresa.com" required autocomplete="email">
+      <button type="submit" id="hero-btn">Quiero acceso →</button>
+    </form>
+    <div class="success-msg" id="hero-success">
+      ✓ Apuntado. Te avisamos cuando abramos acceso.
     </div>
-    <div class="modal-body">
-      <div class="modal-subject"><strong>Asunto:</strong> <span id="modal-subject-text">—</span></div>
-      <textarea class="email-body-edit" id="modal-body-edit" spellcheck="false"></textarea>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-ghost btn-sm" onclick="regenerateEmail()">↻ Regenerar</button>
-      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancelar</button>
-      <button class="btn-send" id="btn-send-email" onclick="sendEmail()">
-        ✉ Abrir en Gmail
-      </button>
-    </div>
+    <p class="form-note">Sin tarjeta. Sin compromiso. Solo te avisamos cuando esté listo.</p>
+  </div>
+
+  <div class="proof-strip">
+    <div class="proof-item"><div class="proof-dot"></div>Cualquier sector · cualquier zona</div>
+    <div class="proof-sep">|</div>
+    <div class="proof-item"><div class="proof-dot"></div>Listado de prospectos en minutos</div>
+    <div class="proof-sep">|</div>
+    <div class="proof-item"><div class="proof-dot"></div>Datos de contacto verificados</div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<div class="ticker-wrap">
+  <div class="ticker-inner">
+    <div class="ticker-item">Paso 1 — Define zona y sector</div>
+    <div class="ticker-item">Paso 2 — Extracción automática</div>
+    <div class="ticker-item">Paso 3 — Email hunting</div>
+    <div class="ticker-item">Paso 4 — Redacción con IA</div>
+    <div class="ticker-item">Paso 5 — Envío directo</div>
+    <div class="ticker-item">Paso 1 — Define zona y sector</div>
+    <div class="ticker-item">Paso 2 — Extracción automática</div>
+    <div class="ticker-item">Paso 3 — Email hunting</div>
+    <div class="ticker-item">Paso 4 — Redacción con IA</div>
+    <div class="ticker-item">Paso 5 — Envío directo</div>
   </div>
 </div>
+
+<section class="section reveal">
+  <div class="section-label">Cómo funciona</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-title">Dile qué buscas<br><em>y dónde</em></div>
+      <p class="step-desc">Indica el tipo de empresa y los municipios que te interesan. Sin configuraciones complicadas — en segundos estás listo para buscar.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-title">Tu listado de<br><em>prospectos</em></div>
+      <p class="step-desc">Captare localiza las empresas, obtiene sus datos de contacto y te entrega un listado ordenado listo para trabajar. Sin copiar ni pegar nada.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-title">Inicia tus<br><em>acciones comerciales</em></div>
+      <p class="step-desc">Tienes el listado listo con email, web y teléfono de cada prospecto. Tú decides cómo y cuándo contactar — sin perder tiempo en buscar datos.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section reveal" style="padding-top:0">
+  <div class="section-label">Qué incluye</div>
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon">— Prospección</div>
+      <div class="feature-title">Listados amplios,<br>sin duplicados</div>
+      <p class="feature-desc">Busca en varios municipios a la vez y acumula resultados entre sesiones. Captare recuerda qué empresas ya conoces y no las repite.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">— Contacto</div>
+      <div class="feature-title">El email correcto,<br>no el genérico</div>
+      <p class="feature-desc">Captare localiza el email de contacto real de cada empresa. Solo se consume crédito cuando hay resultado — sin malgastar.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">— Primer contacto</div>
+      <div class="feature-title">Prospectos listos<br>para contactar</div>
+      <p class="feature-desc">Cada prospecto llega con su email verificado, web, teléfono y valoración. Toda la información que necesitas para iniciar el contacto comercial.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">— Eficiencia</div>
+      <div class="feature-title">Tu tiempo vale,<br>no lo malgastes</div>
+      <p class="feature-desc">Todo lo que antes hacías a mano — buscar empresas, encontrar contactos, organizar la información — Captare lo hace en minutos por ti.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section reveal" style="padding-top:0">
+  <div class="section-label">Planes previstos</div>
+  <div class="pricing">
+    <div class="plan">
+      <div class="plan-name">Free</div>
+      <div class="plan-price"><sup></sup>0<sup>€</sup></div>
+      <div class="plan-period">para siempre</div>
+      <ul class="plan-features">
+        <li>5 búsquedas al mes</li>
+        <li>20 empresas por búsqueda</li>
+        <li>Exportación CSV</li>
+        <li>Historial de empresas</li>
+      </ul>
+      <a href="#waitlist" class="plan-btn">Empezar gratis</a>
+    </div>
+    <div class="plan featured">
+      <div class="plan-badge">Más popular</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price"><sup></sup>29<sup>€</sup></div>
+      <div class="plan-period">por mes</div>
+      <ul class="plan-features">
+        <li>200 búsquedas al mes</li>
+        <li>20 empresas por búsqueda</li>
+        <li>100 créditos de email hunting</li>
+        <li>Exportación CSV</li>
+        <li>Historial persistente</li>
+        <li>Créditos extra a 0,25€/ud</li>
+      </ul>
+      <a href="#waitlist" class="plan-btn">Unirme a la lista</a>
+    </div>
+    <div class="plan">
+      <div class="plan-name">Premium</div>
+      <div class="plan-price"><sup></sup>59<sup>€</sup></div>
+      <div class="plan-period">por mes</div>
+      <ul class="plan-features">
+        <li>200 búsquedas al mes</li>
+        <li>20 empresas por búsqueda</li>
+        <li>300 créditos de email hunting</li>
+        <li>Redacción de emails asistida</li>
+        <li>Exportación CSV</li>
+        <li>Historial persistente</li>
+        <li>Créditos extra a 0,20€/ud</li>
+      </ul>
+      <a href="#waitlist" class="plan-btn">Unirme a la lista</a>
+    </div>
+  </div>
+  <p style="font-size:11px;color:var(--muted);margin-top:16px;text-align:center">
+    Precios orientativos · sujetos a cambio antes del lanzamiento · usuarios de lista de espera tendrán precio especial · créditos no consumidos no se acumulan al mes siguiente
+  </p>
+</section>
+
+<!-- BOTTOM CTA -->
+<div class="bottom-cta">
+  <h2 class="bottom-cta-title">
+    Tu próxima reunión<br>comercial <em>empieza aquí.</em>
+  </h2>
+  <p class="bottom-cta-sub">Apúntate a la lista de espera de Captare y accede antes que nadie cuando abramos.</p>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+    <form class="bottom-form" id="bottom-form" onsubmit="submitForm(event,'bottom')">
+      <input type="email" id="bottom-email" placeholder="tu@empresa.com" required>
+      <button type="submit" id="bottom-btn">Apuntarme →</button>
+    </form>
+    <div class="success-msg" id="bottom-success" style="background:rgba(74,155,100,0.15);border-color:rgba(74,155,100,0.4);color:#9FE1CB">
+      ✓ Apuntado. Te avisamos en el lanzamiento.
+    </div>
+    <p style="font-size:11px;color:rgba(245,242,235,0.3);margin-top:4px">Sin tarjeta. Sin spam.</p>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">Cap<span>tare</span></div>
+  <div>© 2025 Captare · Todos los derechos reservados</div>
+  <div style="display:flex;gap:20px">
+    <a href="#" style="color:var(--muted);text-decoration:none">Privacidad</a>
+    <a href="#" style="color:var(--muted);text-decoration:none">Contacto</a>
+  </div>
+</footer>
 
 <script>
-// ─── STATE ──────────────────────────────────────────────────────────────────
-const state = { companies: [], running: false, modalIdx: null };
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// ─── MEMORY (localStorage) ───────────────────────────────────────────────────
-const MEM_KEY = 'oca_ati_known_places';
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/xreognln';
 
-function memLoad() {
+async function submitForm(e, source) {
+  e.preventDefault();
+  const emailEl   = document.getElementById(source + '-email');
+  const btnEl     = document.getElementById(source + '-btn');
+  const successEl = document.getElementById(source + '-success');
+  const email = emailEl.value.trim();
+  if (!email) return;
+
+  btnEl.textContent = 'Enviando…';
+  btnEl.classList.add('loading');
+  btnEl.disabled = true;
+
   try {
-    const raw = localStorage.getItem(MEM_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch(e) { return {}; }
-}
+    const res = await fetch(FORMSPREE_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ email: email, source: source }),
+    });
 
-function memSave(db) {
-  try { localStorage.setItem(MEM_KEY, JSON.stringify(db)); } catch(e) {}
-}
+    if (res.ok) {
+      // Save locally too for counter
+      const list = JSON.parse(localStorage.getItem('captare_waitlist') || '[]');
+      if (!list.includes(email)) { list.push(email); localStorage.setItem('captare_waitlist', JSON.stringify(list)); }
 
-function memAdd(companies) {
-  const db = memLoad();
-  const now = new Date().toISOString().slice(0,10);
-  for (const c of companies) {
-    if (c.placeId && !db[c.placeId]) {
-      db[c.placeId] = { name: c.name, date: now };
-    }
-  }
-  memSave(db);
-  updateMemBar();
-}
-
-function memIsKnown(placeId) {
-  const db = memLoad();
-  return !!db[placeId];
-}
-
-function resetMemory() {
-  const db = memLoad();
-  const count = Object.keys(db).length;
-  if (count === 0) { log('El historial ya está vacío', 'warn'); return; }
-  if (!confirm('¿Borrar el historial de ' + count + ' empresas conocidas? Esto permitirá volver a extraerlas en búsquedas futuras.')) return;
-  localStorage.removeItem(MEM_KEY);
-  updateMemBar();
-  log('Historial reseteado', 'ok');
-}
-
-function updateMemBar() {
-  const db = memLoad();
-  const count = Object.keys(db).length;
-  document.getElementById('mem-count').textContent = count;
-  if (count === 0) {
-    document.getElementById('mem-detail').textContent = 'Sin historial aún';
-  } else {
-    const dates = Object.values(db).map(v => v.date).sort();
-    const first = dates[0];
-    const last  = dates[dates.length - 1];
-    document.getElementById('mem-detail').textContent =
-      first === last ? 'desde ' + first : 'desde ' + first + ' hasta ' + last;
-  }
-}
-
-// Init memory bar on load
-updateMemBar();
-
-// ─── KEYS TOGGLE ────────────────────────────────────────────────────────────
-function toggleKeys() {
-  const body = document.getElementById('keys-body');
-  const arrow = document.getElementById('keys-arrow');
-  body.classList.toggle('collapsed');
-  arrow.textContent = body.classList.contains('collapsed') ? '▸' : '▾';
-}
-function markKeyDirty(k) {
-  document.getElementById('dot-'+k).className = 'key-dot';
-  document.getElementById('note-'+k).textContent = 'Sin verificar';
-}
-
-// ─── LOG ─────────────────────────────────────────────────────────────────────
-function log(msg, type='') {
-  const el = document.getElementById('log-msg');
-  el.textContent = msg;
-  el.className = 'log-msg ' + type;
-}
-function setSpinner(on) {
-  document.getElementById('spinner-log').style.display = on ? 'block' : 'none';
-}
-function setProgress(pct) {
-  document.getElementById('prog-bar').style.width = pct + '%';
-}
-
-// ─── PIPELINE STEPS UI ──────────────────────────────────────────────────────
-function setPipelineStep(n) {
-  for (let i = 1; i <= 4; i++) {
-    const el = document.getElementById('pip'+i);
-    el.classList.remove('active','done');
-    if (i < n)  el.classList.add('done');
-    if (i === n) el.classList.add('active');
-  }
-}
-
-// ─── RENDER TABLE ───────────────────────────────────────────────────────────
-function statusBadge(s) {
-  const map = {
-    pending:  ['badge-pending',  '○ Pendiente'],
-    hunting:  ['badge-hunting',  '⟳ Buscando email'],
-    found:    ['badge-found',    '✓ Email encontrado'],
-    noemail:  ['badge-noemail',  '— Sin email'],
-    drafting: ['badge-drafting', '⟳ Redactando'],
-    ready:    ['badge-ready',    '✓ Listo para envío'],
-    error:    ['badge-error',    '✕ Error'],
-  };
-  const [cls, lbl] = map[s] || ['badge-pending', s];
-  return `<span class="badge ${cls}">${lbl}</span>`;
-}
-
-function renderRow(c, i, animate=false) {
-  const tr = document.getElementById('row-'+i);
-  const isNew = !tr;
-  const row = tr || document.createElement('tr');
-  row.id = 'row-'+i;
-  if (animate) row.className = 'row-new';
-
-  const domain = c.website ? (() => { try { return new URL(c.website).hostname.replace('www.',''); } catch(e){ return c.website; }})() : '';
-  const webCell = domain ? `<a href="${c.website}" target="_blank">${domain}</a>` : '<span style="color:var(--text3)">—</span>';
-  const stars = c.rating ? '★'.repeat(Math.round(c.rating)) + `<span style="color:var(--text3)"> ${c.rating}</span>` : '—';
-  const emailCell = c.email || '<span style="color:var(--text3)">—</span>';
-
-  const canDraft  = c.email && (c.status === 'found' || c.status === 'noemail' || c.status === 'pending') && !state.running;
-  const canView   = c.status === 'ready';
-  const canHunt   = (c.status === 'pending' || c.status === 'noemail') && c.website && !state.running;
-  const isKnown   = c.knownInMemory;
-  const histBadge = isKnown
-    ? '<span class="badge badge-known" title="Ya estaba en el historial">conocida</span>'
-    : '<span class="badge badge-ready" style="font-size:9px">nueva</span>';
-
-  row.innerHTML = `
-    <td style="color:var(--text3)">${i+1}</td>
-    <td class="truncate" style="max-width:160px;font-weight:500" title="${c.name}">${c.name}</td>
-    <td class="truncate" style="color:var(--text2);font-size:11px" title="${c.address}">${c.address||'—'}</td>
-    <td class="link-cell">${webCell}</td>
-    <td class="rating-stars">${stars}</td>
-    <td class="truncate" style="color:var(--blue);font-size:11px" title="${c.email||''}">${emailCell}</td>
-    <td>${statusBadge(c.status)}</td>
-    <td>${histBadge}</td>
-    <td>
-      <div class="action-cell">
-        <button class="icon-btn" onclick="huntEmail(${i})" ${canHunt?'':'disabled'} title="Buscar email">@</button>
-        <button class="icon-btn" onclick="draftEmail(${i})" ${canDraft?'':'disabled'} title="Redactar email con IA">✎</button>
-        <button class="icon-btn" onclick="openModal(${i})" ${canView?'':'disabled'} title="Ver y enviar email">▶</button>
-      </div>
-    </td>
-  `;
-
-  if (isNew) document.getElementById('table-body').appendChild(row);
-  return row;
-}
-
-function refreshTable() {
-  const empty = document.getElementById('empty-state');
-  const tbl = document.getElementById('main-table');
-  const meta = document.getElementById('table-meta');
-  const n = state.companies.length;
-
-  if (n === 0) { empty.style.display='flex'; tbl.style.display='none'; return; }
-  empty.style.display='none'; tbl.style.display='table';
-
-  const ready = state.companies.filter(c=>c.status==='ready').length;
-  const withEmail = state.companies.filter(c=>c.email).length;
-  const newOnes2  = state.companies.filter(c=>!c.knownInMemory).length;
-  const knownOnes = state.companies.filter(c=>c.knownInMemory).length;
-  let metaTxt = `${n} empresas · ${newOnes2} nuevas · ${knownOnes} conocidas`;
-  if (withEmail > 0) metaTxt += ` · ${withEmail} con email`;
-  if (ready > 0)     metaTxt += ` · ${ready} listos para envío`;
-  meta.textContent = metaTxt;
-
-  document.getElementById('btn-export').disabled = n === 0;
-  document.getElementById('btn-clear').disabled  = n === 0;
-}
-
-// ─── MAIN PIPELINE ──────────────────────────────────────────────────────────
-async function startPipeline() {
-  const gKey = document.getElementById('key-google').value.trim();
-  const hKey = document.getElementById('key-hunter').value.trim();
-  const cKey = document.getElementById('key-claude').value.trim();
-
-  if (!gKey) { log('Falta la Google Places API Key', 'err'); return; }
-  if (!cKey) { log('Falta la OpenAI API Key', 'err'); return; }
-
-  const maxRes = parseInt(document.getElementById('maxres').value);
-
-  state.running = true;
-  document.getElementById('btn-search').disabled = true;
-  // No limpiamos — acumulamos resultados en la tabla
-
-  // PASO 1: EXTRACCIÓN por municipios
-  setPipelineStep(1);
-  setSpinner(true);
-  setProgress(5);
-
-  const locationsRaw = document.getElementById('locations').value;
-  const municipalities = locationsRaw.split('\n').map(l => l.trim()).filter(Boolean);
-  if (municipalities.length === 0) { log('Añade al menos un municipio', 'err'); state.running = false; document.getElementById('btn-search').disabled = false; setSpinner(false); return; }
-
-  const queryText = document.getElementById('sector-type').value.trim() || 'empresa industrial';
-
-  let allCompanies = [];
-  const seen = new Set();
-
-  for (let mi = 0; mi < municipalities.length; mi++) {
-    const mun = municipalities[mi];
-    log(`Buscando en ${mun} (${mi+1}/${municipalities.length})…`);
-    setProgress(5 + Math.round((mi / municipalities.length) * 25));
-    try {
-      const batch = await extractCompanies(queryText, mun, maxRes, gKey);
-      let added = 0;
-      for (const c of batch) {
-        const key = c.name.toLowerCase().trim();
-        if (!seen.has(key)) { seen.add(key); allCompanies.push(c); added++; }
+      if (source === 'hero') {
+        document.getElementById('hero-form').style.display = 'none';
+      } else {
+        document.getElementById('bottom-form').style.display = 'none';
       }
-      log(`${mun}: ${added} empresas nuevas (total: ${allCompanies.length})`, 'ok');
-    } catch(e) {
-      log(`Error en ${mun}: ${e.message}`, 'err');
+      successEl.style.display = 'block';
+      updateCounter();
+    } else {
+      btnEl.textContent = 'Quiero acceso →';
+      btnEl.classList.remove('loading');
+      btnEl.disabled = false;
+      alert('Ha habido un error. Inténtalo de nuevo.');
     }
-    await sleep(500);
+  } catch(err) {
+    btnEl.textContent = 'Quiero acceso →';
+    btnEl.classList.remove('loading');
+    btnEl.disabled = false;
+    alert('Error de conexión. Inténtalo de nuevo.');
   }
-
-  if (allCompanies.length === 0) {
-    log('No se encontraron empresas. Revisa la API Key o los municipios.', 'err');
-    state.running = false;
-    document.getElementById('btn-search').disabled = false;
-    setSpinner(false);
-    return;
-  }
-
-  // Deduplicar contra las ya mostradas en tabla esta sesión
-  const existingIds = new Set(state.companies.map(c => c.placeId));
-  const freshBatch  = allCompanies.filter(c => !existingIds.has(c.placeId));
-  const mapped      = freshBatch.map(c => ({ ...c, status: 'pending', email: '', subject: '', body: '' }));
-
-  // Guardar nuevas en memoria
-  memAdd(mapped.filter(c => !c.knownInMemory));
-
-  // Añadir al final del array existente
-  const startIdx = state.companies.length;
-  state.companies.push(...mapped);
-
-  for (let i = startIdx; i < state.companies.length; i++) {
-    renderRow(state.companies[i], i, true);
-  }
-  refreshTable();
-
-  const knownCount = mapped.filter(c => c.knownInMemory).length;
-  const newCount   = mapped.filter(c => !c.knownInMemory).length;
-  const dupCount   = allCompanies.length - freshBatch.length;
-  let logMsg = `+${mapped.length} empresas añadidas · ${newCount} nuevas · ${knownCount} ya en historial`;
-  if (dupCount > 0) logMsg += ` · ${dupCount} duplicadas ignoradas`;
-  log(logMsg, 'ok');
-  setProgress(30);
-
-  // PASO 2: HUNTER (si hay key)
-  if (hKey) {
-    setPipelineStep(2);
-    log('Buscando emails con Hunter.io…');
-    const withWeb = state.companies.filter(c => c.website);
-    for (let i = 0; i < withWeb.length; i++) {
-      const idx = state.companies.indexOf(withWeb[i]);
-      state.companies[idx].status = 'hunting';
-      renderRow(state.companies[idx], idx);
-      await sleep(300);
-      try {
-        const email = await huntEmailHunter(withWeb[i].website, hKey);
-        state.companies[idx].email  = email || '';
-        state.companies[idx].status = email ? 'found' : 'noemail';
-      } catch(e) {
-        state.companies[idx].status = 'noemail';
-      }
-      renderRow(state.companies[idx], idx);
-      setProgress(30 + Math.round((i / withWeb.length) * 30));
-      refreshTable();
-    }
-    log(`Emails encontrados: ${state.companies.filter(c=>c.email).length}`, 'ok');
-  } else {
-    log('Hunter key no configurada — sin búsqueda de emails', 'warn');
-    state.companies.forEach(c => { if (c.status === 'pending') c.status = 'noemail'; });
-  }
-  setProgress(60);
-
-  // PASO 3: OPENAI — redactar emails solo si hay email
-  setPipelineStep(3);
-  const withEmail = state.companies.filter(c => c.email);
-  if (withEmail.length === 0) {
-    log('Sin emails encontrados — omitiendo redacción. Añade Hunter.io key para activarla.', 'warn');
-  } else {
-    log(`Redactando emails con IA para ${withEmail.length} contactos…`);
-  }
-  // shadow reassign so loop below still works
-  const withEmail2 = withEmail;
-  for (let i = 0; i < withEmail2.length; i++) {
-    const idx = state.companies.indexOf(withEmail2[i]);
-    state.companies[idx].status = 'drafting';
-    renderRow(state.companies[idx], idx);
-    try {
-      const { subject, body } = await draftWithClaude(state.companies[idx], cKey);
-      state.companies[idx].subject = subject;
-      state.companies[idx].body    = body;
-      state.companies[idx].status  = 'ready';
-    } catch(e) {
-      state.companies[idx].status = 'error';
-    }
-    renderRow(state.companies[idx], idx);
-    setProgress(60 + Math.round((i / (withEmail2.length || 1)) * 38));
-    refreshTable();
-    await sleep(500);
-  }
-
-  setPipelineStep(4);
-  setProgress(100);
-  setSpinner(false);
-  const readyCount = state.companies.filter(c => c.status === 'ready').length;
-  log(`Pipeline completo · ${readyCount} emails listos para envío`, 'ok');
-  state.running = false;
-  document.getElementById('btn-search').disabled = false;
-  refreshTable();
-  setTimeout(() => setProgress(0), 3000);
 }
 
-// ─── GOOGLE PLACES NEW (via proxy local) ────────────────────────────────────────────
-const PROXY = 'http://localhost:5050';
-
-async function extractCompanies(query, location, maxRes, apiKey) {
-  const fullQuery = `${query} ${location}`;
-  let companies = [];
-  let pageToken  = null;
-
-  do {
-    const body = { textQuery: fullQuery, languageCode: 'es', pageSize: 20 };
-    if (pageToken) body.pageToken = pageToken;
-
-    let r;
-    try {
-      r = await fetch(`${PROXY}/places/textsearch`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Goog-Api-Key': apiKey,
-          'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.rating,places.userRatingCount,nextPageToken',
-        },
-        body: JSON.stringify(body),
-      });
-    } catch(e) {
-      throw new Error('No se puede conectar al proxy local. ¿Está corriendo proxy_server.py en http://localhost:5050?');
-    }
-
-    if (!r.ok) {
-      const err = await r.json().catch(() => ({}));
-      const msg = err.error?.message || r.statusText;
-      if (r.status === 403) throw new Error('API Key inválida o sin permisos. Asegúrate de tener Places API (New) activada en Google Cloud.');
-      throw new Error('Error Places API: ' + msg);
-    }
-
-    const data = await r.json();
-    if (data.error) throw new Error(data.error.message || 'Error Places API');
-
-    for (const p of (data.places || [])) {
-      if (companies.length >= maxRes) break;
-      const isKnown = memIsKnown(p.id);
-      companies.push({
-        name:          p.displayName?.text || '(sin nombre)',
-        address:       p.formattedAddress || '',
-        placeId:       p.id,
-        rating:        p.rating || null,
-        website:       '',
-        phone:         '',
-        knownInMemory: isKnown,
-      });
-    }
-
-    pageToken = data.nextPageToken || null;
-    if (pageToken && companies.length < maxRes) await sleep(2200);
-  } while (pageToken && companies.length < maxRes);
-
-  // Place Details para web y teléfono — solo empresas nuevas
-  let detailsSkipped = 0;
-  for (let i = 0; i < companies.length; i++) {
-    if (companies[i].knownInMemory) { detailsSkipped++; continue; }
-    try {
-      const dr = await fetch(`${PROXY}/places/details/${companies[i].placeId}`, {
-        headers: {
-          'X-Goog-Api-Key': apiKey,
-          'X-Goog-FieldMask': 'websiteUri,nationalPhoneNumber',
-        },
-      });
-      const dd = await dr.json();
-      companies[i].website = dd.websiteUri || '';
-      companies[i].phone   = dd.nationalPhoneNumber || '';
-    } catch(e) { /* silencioso */ }
-    await sleep(80);
-  }
-  if (detailsSkipped > 0) console.log(`Place Details: ${detailsSkipped} omitidas (ya conocidas)`);
-
-  return companies;
-}
-
-
-// ─── HUNTER.IO ──────────────────────────────────────────────────────────────
-async function huntEmailHunter(website, apiKey) {
-  let domain;
-  try { domain = new URL(website).hostname.replace('www.',''); } catch(e){ return null; }
-  const url = `https://api.hunter.io/v2/domain-search?domain=${domain}&api_key=${apiKey}&limit=1`;
-  const r = await fetch(url);
-  const data = await r.json();
-  const emails = data.data?.emails;
-  if (emails && emails.length > 0) return emails[0].value;
-  // fallback: pattern guessing
-  const pattern = data.data?.pattern;
-  const contacts = data.data?.contacts;
-  return null;
-}
-
-// ─── INDIVIDUAL HUNT ────────────────────────────────────────────────────────
-async function huntEmail(idx) {
-  const hKey = document.getElementById('key-hunter').value.trim();
-  if (!hKey) { log('Configura la Hunter.io API Key', 'err'); return; }
-  const c = state.companies[idx];
-  if (!c.website) { log('Esta empresa no tiene web registrada', 'warn'); return; }
-  c.status = 'hunting';
-  renderRow(c, idx);
-  try {
-    const email = await huntEmailHunter(c.website, hKey);
-    c.email  = email || '';
-    c.status = email ? 'found' : 'noemail';
-    log(email ? `Email encontrado: ${email}` : 'No se encontró email para este dominio', email ? 'ok' : 'warn');
-  } catch(e) {
-    c.status = 'error';
-    log('Error Hunter: ' + e.message, 'err');
-  }
-  renderRow(c, idx);
-  refreshTable();
-}
-
-// ─── OPENAI DRAFT ────────────────────────────────────────────────────────────
-async function draftWithClaude(company, apiKey) {
-  const senderName = document.getElementById('sender-name').value.trim() || 'Equipo comercial OCA ATI';
-  const serviceMap = {
-    inspeccion_industrial: 'inspección industrial (ensayos no destructivos, inspección visual, ultrasonidos)',
-    certificacion_equipos: 'certificación de equipos a presión y recipientes a presión',
-    inspeccion_gruas:      'inspección y certificación de grúas, puentes grúa y equipos de elevación',
-    auditoria_seguridad:   'auditoría de seguridad industrial y evaluación de riesgos',
-    inspeccion_instalaciones: 'inspección de instalaciones eléctricas de alta y baja tensión',
-  };
-  const toneMap = {
-    profesional: 'profesional y directo, sin rodeos',
-    cercano:     'cercano y consultivo, enfocado en ayudar',
-    tecnico:     'técnico y especializado, demostrando expertise sectorial',
-  };
-  const service = serviceMap[document.getElementById('service').value] || 'servicios de inspección industrial';
-  const tone    = toneMap[document.getElementById('tone').value]    || 'profesional';
-
-  const systemPrompt = `Eres un experto en redacción de emails comerciales B2B para el sector industrial.
-OCA Global es una multinacional de inspección, ensayo y certificación con presencia en 15 países y €300M de facturación.
-Redactas emails de presentación comercial concisos, profesionales y con valor para el receptor.`;
-
-  const userPrompt = `Redacta un email comercial de presentación para:
-- Empresa destinataria: ${company.name}
-- Sector: manufactura / metalurgia
-- Dirección: ${company.address}
-- Servicio a ofrecer: ${service}
-- Remitente: ${senderName}
-- Tono: ${tone}
-- Longitud: 4-5 párrafos cortos, sin ser repetitivo
-- Idioma: español formal
-
-Responde SOLO con un JSON con esta estructura exacta, sin markdown ni explicaciones:
-{"subject":"asunto del email aquí","body":"cuerpo completo del email aquí, con saltos de línea \\n"}`;
-
-  const r = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      max_tokens: 1000,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user',   content: userPrompt   },
-      ],
-    }),
+// Simulated waitlist counter (replace with real API in production)
+function updateCounter() {
+  const list = JSON.parse(localStorage.getItem('captare_waitlist') || '[]');
+  // Start from a seed number to look less empty
+  const displayed = Math.max(list.length + 47, 47);
+  document.querySelectorAll('.waitlist-count').forEach(el => {
+    el.textContent = displayed + ' personas apuntadas';
   });
-  if (!r.ok) {
-    const err = await r.json().catch(() => ({}));
-    throw new Error(err.error?.message || r.statusText);
-  }
-  const data = await r.json();
-  const text = data.choices?.[0]?.message?.content || '';
-  const clean = text.replace(/```json|```/g, '').trim();
-  return JSON.parse(clean);
 }
+updateCounter();
 
-// ─── INDIVIDUAL DRAFT ───────────────────────────────────────────────────────
-async function draftEmail(idx) {
-  const cKey = document.getElementById('key-claude').value.trim();
-  if (!cKey) { log('Configura la OpenAI API Key', 'err'); return; }
-  const c = state.companies[idx];
-  if (!c.email) { log('Esta empresa no tiene email — busca primero con Hunter (@)', 'warn'); return; }
-  c.status = 'drafting';
-  renderRow(c, idx);
-  setSpinner(true);
-  log(`Redactando email para ${c.name}…`);
-  try {
-    const { subject, body } = await draftWithClaude(c, cKey);
-    c.subject = subject;
-    c.body    = body;
-    c.status  = 'ready';
-    log(`Email listo para ${c.name}`, 'ok');
-    openModal(idx);
-  } catch(e) {
-    c.status = 'error';
-    log('Error OpenAI: ' + e.message, 'err');
-  }
-  setSpinner(false);
-  renderRow(c, idx);
-  refreshTable();
-}
-
-// ─── MODAL ──────────────────────────────────────────────────────────────────
-function openModal(idx) {
-  const c = state.companies[idx];
-  if (!c || c.status !== 'ready') return;
-  state.modalIdx = idx;
-  document.getElementById('modal-company').textContent  = c.name;
-  document.getElementById('modal-to').textContent       = c.email;
-  document.getElementById('modal-subject-text').textContent = c.subject;
-  document.getElementById('modal-body-edit').value      = c.body;
-  document.getElementById('modal-bg').classList.remove('hidden');
-}
-function closeModal() {
-  // Guardar edits
-  if (state.modalIdx !== null) {
-    state.companies[state.modalIdx].body = document.getElementById('modal-body-edit').value;
-  }
-  document.getElementById('modal-bg').classList.add('hidden');
-  state.modalIdx = null;
-}
-function closeModalBg(e) {
-  if (e.target === document.getElementById('modal-bg')) closeModal();
-}
-async function regenerateEmail() {
-  if (state.modalIdx === null) return;
-  const cKey = document.getElementById('key-claude').value.trim();
-  if (!cKey) { log('Falta API Key de OpenAI', 'err'); return; }
-  const c = state.companies[state.modalIdx];
-  document.getElementById('modal-body-edit').value = '⟳ Regenerando…';
-  try {
-    const { subject, body } = await draftWithClaude(c, cKey);
-    c.subject = subject;
-    c.body    = body;
-    document.getElementById('modal-subject-text').textContent = subject;
-    document.getElementById('modal-body-edit').value = body;
-    log('Email regenerado', 'ok');
-  } catch(e) {
-    log('Error regenerando: ' + e.message, 'err');
-  }
-}
-
-// ─── SEND VIA GMAIL ─────────────────────────────────────────────────────────
-async function sendEmail() {
-  if (state.modalIdx === null) return;
-  const c = state.companies[state.modalIdx];
-  const body = document.getElementById('modal-body-edit').value;
-  const subject = document.getElementById('modal-subject-text').textContent;
-
-  // Guardar edición
-  c.body = body;
-
-  const btn = document.getElementById('btn-send-email');
-  btn.disabled = true;
-  btn.textContent = '⟳ Enviando…';
-
-  try {
-    await sendViaGmailMCP(c.email, subject, body);
-    log(`Email enviado a ${c.email}`, 'ok');
-    closeModal();
-  } catch(e) {
-    log('Error enviando: ' + e.message, 'err');
-    btn.disabled = false;
-    btn.innerHTML = '✉ Abrir en Gmail';
-  }
-}
-
-async function sendViaGmailMCP(to, subject, body) {
-  // Abre Gmail con mailto como fallback universal (no requiere API adicional)
-  const mailto = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.location.href = mailto;
-  // Dar tiempo al cliente de correo a abrirse
-  await sleep(800);
-}
-
-// ─── EXPORT CSV ─────────────────────────────────────────────────────────────
-function exportCSV() {
-  const headers = ['Nombre','Dirección','Web','Teléfono','Email','Valoración','Estado'];
-  const rows = state.companies.map(c => [
-    `"${(c.name||'').replace(/"/g,'""')}"`,
-    `"${(c.address||'').replace(/"/g,'""')}"`,
-    c.website||'',
-    c.phone||'',
-    c.email||'',
-    c.rating||'',
-    c.status||'',
-  ].join(','));
-  const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = `oca_ati_prospeccion_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-}
-
-// ─── CLEAR ───────────────────────────────────────────────────────────────────
-function clearAll() {
-  if (state.companies.length === 0) return;
-  if (!confirm('¿Borrar las ' + state.companies.length + ' empresas de la tabla? El historial de memoria no se borra.')) return;
-  state.companies = [];
-  document.getElementById('table-body').innerHTML = '';
-  refreshTable();
-  setProgress(0);
-  setPipelineStep(1);
-  log('Tabla limpiada · el historial de memoria se mantiene');
-}
-
-// ─── UTILS ──────────────────────────────────────────────────────────────────
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-function setSector(val) { document.getElementById('sector-type').value = val; }
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) { e.preventDefault(); target.scrollIntoView({ behavior: 'smooth' }); }
+  });
+});
 </script>
 </body>
 </html>
